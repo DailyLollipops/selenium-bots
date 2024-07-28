@@ -1,0 +1,49 @@
+name: 'selenium-bots'
+services:
+  selenium-hub:
+    image: selenium/hub:latest
+    container_name: selenium-hub
+    ports:
+      - 4444:4444
+
+  chrome:
+    image: selenium/node-chrome:latest
+    volumes:
+      - /dev/shm:/dev/shm
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    ports:
+      - ${CHROME_VNC_PORT}:7900 
+
+  firefox:
+    image: selenium/node-firefox:latest
+    volumes:
+      - /dev/shm:/dev/shm
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    ports:
+      - ${FIREFOX_VNC_PORT}:7900  
+
+  runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: runner
+    volumes:
+      - .:/usr/src/selenium-bots
+    environment:
+      - PYTHONPATH=/usr/src/selenium-bots
+    working_dir: /usr/src/selenium-bots
+    depends_on:
+      - selenium-hub
+      - chrome
+      - firefox
+    command: sh -c "while true; do sleep 1000; done"

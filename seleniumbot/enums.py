@@ -1,0 +1,35 @@
+from enum import Enum
+
+class Driver(Enum):
+    CHROME = 'chrome'
+    FIREFOX = 'firefox'
+
+
+class BotProxy(Enum):
+    FREE = 'free'
+    FREE_GOOGLE = 'free-google'
+    FREE_HTTPS = 'free-https'
+    FREE_GOOGLE_HTTPS = 'free-google-https'
+    FREE_US = 'free-us'
+    FREE_US_GOOGLE = 'free-us-google'
+    FREE_US_HTTPS = 'free-us-https'
+    FREE_US_GOOGLE_HTTPS = 'free-us-google-https'
+    PROXYMESH_CA = 'proxymesh-ca'
+    PROXYMESH_WA = 'proxymesh-wa'
+    PROXYMESH_FR = 'proxymesh-fr'
+    PROXYMESH_JP = 'proxymesh-jp'
+    PROXYMESH_AU = 'proxymesh-au'
+    PROXYMESH_DE = 'proxymesh-de'
+    PROXYMESH_NL = 'proxymesh-nl'
+    PROXYMESH_SG = 'proxymesh-sg'
+    PROXYMESH_IL = 'proxymesh-il'
+    PROXYMESH_TX = 'proxymesh-tx'
+    PROXYMESH_DC = 'proxymesh-dc'
+    PROXYMESH_NY = 'proxymesh-ny'
+    PROXYMESH_UK = 'proxymesh-uk'
+    PROXYMESH_CH = 'proxymesh-ch'
+    PROXYMESH_FL = 'proxymesh-fl'
+    PROXYMESH_IN = 'proxymesh-in'
+    PROXYMESH_OPEN = 'proxymesh-open'
+    PROXYMESH_WORLD = 'proxymesh-world'
+    PROXYMESH_US = 'proxymesh-us'
