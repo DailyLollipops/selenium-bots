@@ -1,6 +1,8 @@
 from bs4 import BeautifulSoup
 from loguru import logger
+
 from .enums import BotProxy
+
 import requests
 
 
@@ -120,6 +122,6 @@ class ProxyFactory:
         proxymesh_proxy = proxymesh_mapping.get(bot_proxy)
         if not proxymesh_proxy:
             raise Exception(f'{bot_proxy} is not a valid proxymesh proxy')
-        proxy = f'http://{self.PROXYMESH_USERNAME}:{self.PROXYMESH_PASSWORD}.{proxymesh_proxy}'
+        proxy = f'http://{self.PROXYMESH_USERNAME}:{self.PROXYMESH_PASSWORD}@{proxymesh_proxy}'
         logger.info(f'Got proxy: http://****:****@{proxymesh_proxy}')
         return proxy

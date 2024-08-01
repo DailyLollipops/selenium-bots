@@ -2,9 +2,11 @@ from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.firefox.options import Options as FireFoxOptions
 from selenium.webdriver.chrome.options import Options as ChromeOptions
-from selenium.webdriver.common.proxy import Proxy, ProxyType
-from .enums import Driver
 from loguru import logger
+
+from .enums import Driver
+from .utils import stringutil
+
 
 class DriverFactory:
     HUB_URL = ''
@@ -53,13 +55,14 @@ class DriverFactory:
         options.set_preference('browser.helperApps.neverAsk.saveToDisk', 'application/x-gzip')
 
         if proxy:
-            proxy = Proxy({
-                'proxyType': ProxyType.MANUAL,
-                'httpProxy': proxy,
-                'sslProxy': proxy,
-                'noProxy': ''
-            })
-            options.proxy = proxy
+            logger.info(f'Using proxy: {proxy}')
+            proxy_info = stringutil.decompose_proxy_url(proxy)
+            options.set_preference('network.proxy.type', 1)
+            options.set_preference('network.proxy.http', proxy_info['host'])
+            options.set_preference('network.proxy.http_port', proxy_info['port'])
+            options.set_preference('network.proxy.ssl', proxy_info['host'])
+            options.set_preference('network.proxy.ssl_port', proxy_info['port'])
+
         driver = webdriver.Remote(command_executor=self.HUB_URL, options=options)
         return driver
     
@@ -72,14 +75,10 @@ class DriverFactory:
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--disable-gpu')
         options.add_argument('--dns-prefetch-disable')
+
         if proxy:
-            proxy = Proxy({
-                'proxyType': ProxyType.MANUAL,
-                'httpProxy': proxy,
-                'sslProxy': proxy,
-                'noProxy': ''
-            })
-            options.proxy = proxy
+            options.add_argument(f'--proxy-server=http={proxy};https={proxy}')
+
         driver = webdriver.Remote(command_executor=self.HUB_URL, options=options)
         return driver
     

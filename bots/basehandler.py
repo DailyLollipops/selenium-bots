@@ -4,13 +4,14 @@ from bots.settings import settings
 from loguru import logger
 from abc import ABC, abstractmethod
 import traceback
+import sys
 
 
 class BaseHandler(ABC):
     def __init__(self, driver: Driver, proxy: BotProxy = None, config: dict = {}, params: dict = {}) -> None:
         self.config = config
         self.logger = logger
-        self.logger.add(f'{settings.LOG_DIR}/{config.get("id")}.log')
+        self.logger.add(f'{settings.LOG_DIR}/{config.get("id")}.log', level="INFO")
         self.scraper = SeleniumBot(
             hub_url=settings.HUB_URL,
             driver=driver,
@@ -45,7 +46,9 @@ class BaseHandler(ABC):
             self.preprocess_data()
             result = self.run() or {}
             self.logger.info(f"Result: {str(result)}")
-        except:
+        except KeyboardInterrupt:
+            self.logger.info('CTRL+C detected')
+        except Exception as e:
             self.logger.error(traceback.format_exc())
         finally:
             self.logger.info("Closing driver")
