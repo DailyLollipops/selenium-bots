@@ -42,14 +42,26 @@ class BaseHandler(ABC):
 
 
     def handle(self) -> dict:
+        data = {
+            'success': False,
+            'message': '',
+            'data': {}
+        }
         try:
             self.preprocess_data()
             result = self.run() or {}
-            self.logger.info(f"Result: {str(result)}")
+            data['success'] = True
+            data['message'] = 'Bot ran successfully'
+            data['data'] = result
         except KeyboardInterrupt:
             self.logger.info('CTRL+C detected')
+            data['success'] = False
+            data['message'] = 'Bot run interrupted'
         except Exception as e:
             self.logger.error(traceback.format_exc())
+            data['success'] = False
+            data['message'] = e
         finally:
-            self.logger.info("Closing driver")
+            self.logger.info(f'Result: {data}')
+            self.logger.info('Closing driver')
             self.scraper.close()
