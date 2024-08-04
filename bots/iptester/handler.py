@@ -1,4 +1,4 @@
-from botconfig import config
+from bots.iptester.botconfig import config
 from seleniumbot.enums import Driver, BotProxy
 from bots.basehandler import BaseHandler, DictParamType
 
