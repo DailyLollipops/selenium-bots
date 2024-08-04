@@ -27,7 +27,13 @@ class DictParamType(click.ParamType):
 
 
 class BaseHandler(ABC):
-    def __init__(self, driver: Driver, proxy: BotProxy = None, config: dict = {}, params: dict = {}) -> None:
+    def __init__(self, 
+                 driver: Driver, 
+                 proxy: BotProxy = None, 
+                 config: dict = {}, 
+                 params: dict = {}, 
+                 debug: bool = False
+                ) -> None:
         self.parameters = params
         self.config = config
         self.logger = logger
@@ -40,6 +46,7 @@ class BaseHandler(ABC):
             timeout=config.get('timeout', 30),
             proxymesh_username=settings.PROXYMESH_USERNAME,
             proxymesh_password=settings.PROXYMESH_PASSWORD,
+            debug=debug
         )
         self.logger.info(f"{driver} driver initialized")
 
