@@ -27,3 +27,11 @@ Once inside the runner:
 ```bash
 python bots/{id}/handler.py
 ```
+
+or run with params:
+
+```bash
+python bots/{id}/handler.py --params "{'key': 'value'}"
+```
+
+_Note: Params depends on bot_

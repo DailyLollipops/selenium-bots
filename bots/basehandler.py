@@ -3,15 +3,36 @@ from seleniumbot.enums import Driver, BotProxy
 from bots.settings import settings
 from loguru import logger
 from abc import ABC, abstractmethod
+
+import ast
+import click
 import traceback
-import sys
+
+
+class DictParamType(click.ParamType):
+    name = 'dictionary'
+
+    def convert(self, value, param, ctx):
+        if isinstance(value, dict):
+            return value
+        
+        try:
+            result = ast.literal_eval(value)
+            if isinstance(result, dict):
+                return result
+            else:
+                self.fail(f"{value!r} is not a valid dictionary", param, ctx)
+        except (ValueError, SyntaxError):
+            self.fail(f"{value!r} is not a valid dictionary", param, ctx)
 
 
 class BaseHandler(ABC):
     def __init__(self, driver: Driver, proxy: BotProxy = None, config: dict = {}, params: dict = {}) -> None:
+        self.parameters = params
         self.config = config
         self.logger = logger
         self.logger.add(f'{settings.LOG_DIR}/{config.get("id")}.log', level="INFO")
+        self.logger.info(f'Starting bot params={params}')
         self.scraper = SeleniumBot(
             hub_url=settings.HUB_URL,
             driver=driver,

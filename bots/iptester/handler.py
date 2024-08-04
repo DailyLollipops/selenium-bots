@@ -1,10 +1,12 @@
 from botconfig import config
 from seleniumbot.enums import Driver, BotProxy
-from bots.basehandler import BaseHandler
+from bots.basehandler import BaseHandler, DictParamType
+
+import click
 
 class BotHandler(BaseHandler):
     def __init__(self, params: dict = {}) -> None:
-        super().__init__(Driver.CHROME, proxy=BotProxy.FREE, config=config, params=params)
+        super().__init__(Driver.CHROME, proxy=None, config=config, params=params)
         
     def run(self):
         """
@@ -26,5 +28,9 @@ class BotHandler(BaseHandler):
 
 
 if __name__ == '__main__':
-    bot = BotHandler()
-    bot.handle()
+    @click.command()
+    @click.option('--params', type=DictParamType(), default={}, help='Bot handler parameters')
+    def run(params: dict):
+        bot = BotHandler(params=params)
+        bot.handle()
+    run()
