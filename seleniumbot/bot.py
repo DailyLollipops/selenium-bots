@@ -11,12 +11,14 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from .driverfactory import DriverFactory
 from .proxyfactory import ProxyFactory
+from .proxyserver import ProxyServer
 from .enums import Driver, BotProxy
 
 from datetime import datetime
 
 import time
 import random
+import signal
 
 class SeleniumBot:
     def __init__(self, 
@@ -24,6 +26,7 @@ class SeleniumBot:
                  driver: Driver, 
                  timeout: int = 30,
                  proxy: BotProxy = None,
+                 debug: bool = False,
                  **kwargs
                 ) -> None:
         proxymesh_username = kwargs.pop('proxymesh_username') or ''
@@ -34,15 +37,24 @@ class SeleniumBot:
         driver_factory = DriverFactory()
         driver_factory.set_hub_url(hub_url)
         bot_proxy = proxy_factory.get_proxy(proxy)
-        self.driver = driver_factory.get_driver(driver, proxy=bot_proxy)
+        proxy_server_url = None
+        if proxy:
+            self.proxy_server = ProxyServer(bot_proxy, debug=debug)
+            proxy_server_port = self.proxy_server.start()
+            proxy_server_url = f'http://runner:{proxy_server_port}'
+        self.driver = driver_factory.get_driver(driver, proxy=proxy_server_url)
         self.driver_wait = WebDriverWait(self.driver, timeout)
+        signal.signal(signal.SIGINT, lambda signum, frame: self.close())
 
     def close(self):
         """
         Close necessary display and applications
 
         """
-        self.driver.quit()
+        if hasattr(self, 'proxy_server'):
+            self.proxy_server.stop()
+        if hasattr(self, 'driver'):
+            self.driver.quit()
 
     def get_el(self, dom=None):
         """

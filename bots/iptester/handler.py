@@ -4,7 +4,7 @@ from bots.basehandler import BaseHandler
 
 class BotHandler(BaseHandler):
     def __init__(self, params: dict = {}) -> None:
-        super().__init__(Driver.CHROME, proxy=BotProxy.PROXYMESH_CA, config=config, params=params)
+        super().__init__(Driver.CHROME, proxy=BotProxy.FREE, config=config, params=params)
         
     def run(self):
         """
