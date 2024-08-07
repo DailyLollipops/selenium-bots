@@ -200,6 +200,7 @@ class ProxyServer:
         self.proxy_password = proxy_info['password']
         self.server_url = ''
         self.httpd: ThreadedHTTPServer = None
+        self.server_thread: threading.Thread = None
 
         signal.signal(signal.SIGINT, self.shutdown)
         signal.signal(signal.SIGTERM, self.shutdown)
@@ -226,9 +227,9 @@ class ProxyServer:
         server_address = ('', port)
         self.httpd = ThreadedHTTPServer(server_address, handler)
         
-        server_thread = threading.Thread(target=self.httpd.serve_forever)
-        server_thread.daemon = True
-        server_thread.start()
+        self.server_thread = threading.Thread(target=self.httpd.serve_forever)
+        self.server_thread.daemon = True
+        self.server_thread.start()
         
         assigned_port = self.httpd.server_address[1]
         logger.info(f'Proxy server started on port {assigned_port}')
@@ -247,6 +248,7 @@ class ProxyServer:
         self.httpd.server_close()
         logger.info('Proxy server stopped')
         self.httpd = None
+        self.server_thread.join()
 
 
     def shutdown(self, signum, frame):
