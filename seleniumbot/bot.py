@@ -25,24 +25,13 @@ class SeleniumBot:
                  hub_url: str, 
                  driver: Driver, 
                  timeout: int = 30,
-                 proxy: BotProxy = None,
+                 proxy: str = None,
                  debug: bool = False,
                  **kwargs
                 ) -> None:
-        proxymesh_username = kwargs.pop('proxymesh_username') or ''
-        proxymesh_password = kwargs.pop('proxymesh_password') or ''
-        proxy_factory = ProxyFactory()
-        proxy_factory.set_proxymesh_username(proxymesh_username)
-        proxy_factory.set_proxymesh_password(proxymesh_password)
         driver_factory = DriverFactory()
         driver_factory.set_hub_url(hub_url)
-        bot_proxy = proxy_factory.get_proxy(proxy)
-        proxy_server_url = None
-        if proxy:
-            self.proxy_server = ProxyServer(bot_proxy, debug=debug)
-            proxy_server_port = self.proxy_server.start()
-            proxy_server_url = f'http://runner:{proxy_server_port}'
-        self.driver = driver_factory.get_driver(driver, proxy=proxy_server_url)
+        self.driver = driver_factory.get_driver(driver, proxy=proxy)
         self.driver_wait = WebDriverWait(self.driver, timeout)
         signal.signal(signal.SIGINT, lambda signum, frame: self.close())
 
@@ -51,8 +40,6 @@ class SeleniumBot:
         Close necessary display and applications
 
         """
-        if hasattr(self, 'proxy_server'):
-            self.proxy_server.stop()
         if hasattr(self, 'driver'):
             self.driver.quit()
 
