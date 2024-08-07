@@ -1,12 +1,14 @@
 from bots.iptester.botconfig import config
 from seleniumbot.enums import Driver, BotProxy
 from bots.basehandler import BaseHandler, DictParamType
+from bots.mixins import RotatingProxyMixin
 
 import click
 
-class BotHandler(BaseHandler):
+class BotHandler(RotatingProxyMixin, BaseHandler):
     def __init__(self, params: dict = {}, debug: bool = False) -> None:
-        super().__init__(Driver.CHROME, proxy=BotProxy.FREE_HTTPS, config=config, params=params, debug=debug)
+        super().__init__(Driver.CHROME, bot_proxy=BotProxy.FREE_GOOGLE, config=config, params=params, debug=debug)
+        self.max_retries = 3
         
     def run(self):
         """

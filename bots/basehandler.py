@@ -31,7 +31,7 @@ class DictParamType(click.ParamType):
 class BaseHandler(ABC):
     def __init__(self, 
                  driver: Driver, 
-                 proxy: BotProxy = None, 
+                 bot_proxy: BotProxy = None, 
                  config: dict = {}, 
                  params: dict = {}, 
                  debug: bool = False
@@ -39,25 +39,30 @@ class BaseHandler(ABC):
         self.parameters = params
         self.config = config
         self.logger = logger
+        self.bot_proxy = bot_proxy
+        self.driver = driver
+        self.debug = debug
+        self.proxy_factory = None
         self.proxy_server = None
+        proxy_server_url = ''
+
         self.logger.add(f'{settings.LOG_DIR}/{config.get("id")}.log', level="INFO")
         self.logger.info(f'Starting bot params={params}')
-        proxy_server_url = ''
-        if proxy:
-            proxy_factory = ProxyFactory()
-            proxy_factory.set_proxymesh_username(settings.PROXYMESH_USERNAME)
-            proxy_factory.set_proxymesh_password(settings.PROXYMESH_PASSWORD)
-            bot_proxy = proxy_factory.get_proxy(proxy)
-            self.proxy_server = ProxyServer(bot_proxy, debug=debug)
+
+        if bot_proxy:
+            self.proxy_factory = ProxyFactory()
+            self.proxy_factory.set_proxymesh_username(settings.PROXYMESH_USERNAME)
+            self.proxy_factory.set_proxymesh_password(settings.PROXYMESH_PASSWORD)
+            proxy = self.proxy_factory.get_proxy(bot_proxy)
+            self.proxy_server = ProxyServer(proxy, debug=debug)
             proxy_server_port = self.proxy_server.start()
             proxy_server_url = f'http://runner:{proxy_server_port}'
+
         self.scraper = SeleniumBot(
             hub_url=settings.HUB_URL,
             driver=driver,
             proxy=proxy_server_url,
             timeout=config.get('timeout', 30),
-            proxymesh_username=settings.PROXYMESH_USERNAME,
-            proxymesh_password=settings.PROXYMESH_PASSWORD,
             debug=debug
         )
         self.logger.info(f"{driver} driver initialized")
@@ -107,3 +112,4 @@ class BaseHandler(ABC):
             self.scraper.close()
             if self.proxy_server:
                 self.proxy_server.stop()
+            return data
