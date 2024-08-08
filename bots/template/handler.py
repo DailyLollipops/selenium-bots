@@ -1,4 +1,4 @@
-from botconfig import config
+from bots.template.botconfig import config
 from seleniumbot.enums import Driver
 from bots.common.basehandler import BaseHandler
 

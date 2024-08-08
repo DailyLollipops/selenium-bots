@@ -1,5 +1,6 @@
 import click
 import importlib
+import json
 import re
 import shutil
 import textwrap
@@ -34,7 +35,7 @@ def createbot(id, **kwargs):
     description = kwargs.pop("description")
     with open(f'{destination_path}/handler.py', 'r+') as file:
         contents = file.read()
-        contents = re.sub('from botconfig', f'from bots.{id}.botconfig', contents)
+        contents = re.sub('from bots.template.botconfig', f'from bots.{id}.botconfig', contents)
         file.seek(0)
         file.truncate()
         file.write(contents)
@@ -76,6 +77,7 @@ def runbot(id, **kwargs):
     except Exception as e:
         print(f'Error: {e}')
         return
+    params = json.loads(params)
     bot = handler(params=params, debug=debug)
     bot.handle()
 

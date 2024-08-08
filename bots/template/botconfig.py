@@ -11,10 +11,13 @@ config = {
     # Timeout for DriverWait
     "timeout": 30,
 
+    # See bots.common.parameters.py for available rules
     "parameters": {
-        "parameter": {
-            "required": False,
-            "regex": ""
+        "age": {
+            "param_type": int,
+            "required": True,
+            "min": 18,
+            "max": 99,
         }
     }
 
