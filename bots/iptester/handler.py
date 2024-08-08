@@ -1,12 +1,13 @@
 from bots.iptester.botconfig import config
 from seleniumbot.enums import Driver, BotProxy
-from bots.basehandler import BaseHandler, DictParamType
+from bots.common.basehandler import BaseHandler
 
+import json
 import click
 
 class BotHandler(BaseHandler):
     def __init__(self, params: dict = {}, debug: bool = False) -> None:
-        super().__init__(Driver.CHROME, proxy=BotProxy.FREE_HTTPS, config=config, params=params, debug=debug)
+        super().__init__(Driver.CHROME, proxy=None, config=config, params=params, debug=debug)
         
     def run(self):
         """
@@ -29,9 +30,10 @@ class BotHandler(BaseHandler):
 
 if __name__ == '__main__':
     @click.command()
-    @click.option('--params', '-p', type=DictParamType(), default={}, help='Bot handler parameters')
+    @click.option('--params', '-p', default={}, help='Bot handler parameters')
     @click.option('--debug', '-d', is_flag=True, default=False, help='Enable verbose logging')
     def run(params: dict, debug: bool):
+        params = json.loads(params)
         bot = BotHandler(params=params, debug=debug)
         bot.handle()
     run()

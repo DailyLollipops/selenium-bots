@@ -2,30 +2,15 @@ from seleniumbot import SeleniumBot
 from seleniumbot.proxyfactory import ProxyFactory
 from seleniumbot.proxyserver import ProxyServer
 from seleniumbot.enums import Driver, BotProxy
-from bots.settings import settings
+from seleniumbot.utils import dictutils
+from bots.common.settings import settings
 from loguru import logger
 from abc import ABC, abstractmethod
 
 import ast
 import click
 import traceback
-
-
-class DictParamType(click.ParamType):
-    name = 'dictionary'
-
-    def convert(self, value, param, ctx):
-        if isinstance(value, dict):
-            return value
-        
-        try:
-            result = ast.literal_eval(value)
-            if isinstance(result, dict):
-                return result
-            else:
-                self.fail(f"{value!r} is not a valid dictionary", param, ctx)
-        except (ValueError, SyntaxError):
-            self.fail(f"{value!r} is not a valid dictionary", param, ctx)
+import re
 
 
 class BaseHandler(ABC):
@@ -64,11 +49,31 @@ class BaseHandler(ABC):
 
 
 
+    def validate_parameters(self):
+        """
+        Validate parameters from config
+        """
+        if not (parameters := dictutils.get(self.config, 'parameters')):
+            return
+        self.logger.info('Validating parameters')
+        if not self.parameters:
+            raise Exception('Missing parameter')
+        for key, rules in parameters.items():
+            if rules.get('required', False):
+                if not dictutils.does_keys_exists(self.parameters, [key]):
+                    raise Exception(f'{key} is required')
+                if pattern := rules.get('regex') and not \
+                    re.search(pattern, self.parameters.get(key)):
+                    raise Exception(f'Invalid format for {key}')
+            
+
+
+
     def preprocess_data(self):
         """
         Preprocess data.
         """
-        pass
+        self.validate_parameters()
 
 
 
@@ -77,7 +82,7 @@ class BaseHandler(ABC):
         """
         Bot entry point function.
         """
-        pass
+        self.validate_parameters()
 
 
 
