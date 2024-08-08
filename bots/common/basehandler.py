@@ -2,13 +2,15 @@ from seleniumbot import SeleniumBot
 from seleniumbot.proxyfactory import ProxyFactory
 from seleniumbot.proxyserver import ProxyServer
 from seleniumbot.enums import Driver, BotProxy
-from seleniumbot.utils import dictutils
+
+from bots.common.exceptions import ValidationError
+from bots.common.parameter import Parameter
 from bots.common.settings import settings
+from bots.common.utils import dictutils
+
 from loguru import logger
 from abc import ABC, abstractmethod
 
-import ast
-import click
 import traceback
 import re
 
@@ -21,7 +23,7 @@ class BaseHandler(ABC):
                  params: dict = {}, 
                  debug: bool = False
                 ) -> None:
-        self.parameters = params
+        self.parameters = params or {}
         self.config = config
         self.logger = logger
         self.proxy_server = None
@@ -56,16 +58,12 @@ class BaseHandler(ABC):
         if not (parameters := dictutils.get(self.config, 'parameters')):
             return
         self.logger.info('Validating parameters')
-        if not self.parameters:
-            raise Exception('Missing parameter')
-        for key, rules in parameters.items():
-            if rules.get('required', False):
-                if not dictutils.does_keys_exists(self.parameters, [key]):
-                    raise Exception(f'{key} is required')
-                if pattern := rules.get('regex') and not \
-                    re.search(pattern, self.parameters.get(key)):
-                    raise Exception(f'Invalid format for {key}')
-            
+        for name, rules in parameters.items():
+            self.logger.info(rules)
+            if not (param_type := rules.pop('param_type')):
+                raise ValidationError(f'Unknown param type for {name}')
+            param = Parameter(name=name, param_type=param_type, **rules)
+            param.validate(self.parameters.get(name, None))            
 
 
 
