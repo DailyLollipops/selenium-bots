@@ -106,7 +106,8 @@ class BaseHandler(ABC):
             data['message'] = str(e)
         finally:
             self.logger.info(f'Result: {data}')
+            if self.proxy_server:
+                self.logger.info('Stopping proxy server')
+                self.proxy_server.stop()
             self.logger.info('Closing driver')
             self.scraper.close()
-            if self.proxy_server:
-                self.proxy_server.stop()
