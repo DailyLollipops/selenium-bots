@@ -18,7 +18,7 @@ class BotHandler(BaseHandler):
 
 if __name__ == '__main__':
     @click.command()
-    @click.option('--params', '-p', default={}, help='Bot handler parameters')
+    @click.option('--params', '-p', default='{}', help='Bot handler parameters')
     @click.option('--debug', '-d', is_flag=True, default=False, help='Enable verbose logging')
     def run(params: dict, debug: bool):
         params = json.loads(params)

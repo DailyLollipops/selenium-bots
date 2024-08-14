@@ -63,10 +63,10 @@ Optional:\n
 )
 @click.command(help=runbot_help)
 @click.argument('id')
-@click.option('--params', '-p', help='Bot params')
+@click.option('--params', '-p', default='{}', help='Bot params')
 @click.option('--debug', '-d', is_flag=True, default=False, help='Enable verbose logging')
 def runbot(id, **kwargs):
-    params = kwargs.get('params', {})
+    params = kwargs.get('params', '{}')
     debug = kwargs.get('debug', False)
     try:
         module = importlib.import_module(f'bots.{id}.handler')
@@ -77,6 +77,7 @@ def runbot(id, **kwargs):
     except Exception as e:
         print(f'Error: {e}')
         return
+    print(params)
     params = json.loads(params)
     bot = handler(params=params, debug=debug)
     bot.handle()
