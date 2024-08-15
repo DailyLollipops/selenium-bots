@@ -7,6 +7,8 @@ A collection of bots for selenium automation
 1. Install docker
 2. Copy `.env.sample` and rename to `.env`
 3. Fill out values for `.env` such as credentials etc.
+4. Run docker compose with `docker compose up -d --remove-orphans`
+5. Hub info can be view on `localhost:${HUB_PORT}`
 
 ## Running
 
