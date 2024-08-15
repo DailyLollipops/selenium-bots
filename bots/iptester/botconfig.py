@@ -11,13 +11,6 @@ config = {
     # Timeout for DriverWait
     "timeout": 30,
 
-    "parameters": {
-        "ip": {
-            "required": True,
-            "regex": r"\d+"
-        }
-    },
-
     # Other configs (e.g. selectors, xpaths)
     "mainUrl": "https://whatismyipaddress.com/",
     "ipV4Xpath": "//p[contains(text(), 'IPv4')]/span[2]",
