@@ -4,7 +4,9 @@ services:
     image: selenium/hub:latest
     container_name: selenium-hub
     ports:
-      - 4444:4444
+      - ${HUB_PORT}:4444
+    environment:
+      - SE_VNC_PASSWORD=${VNC_PASSWORD}
 
   chrome:
     image: selenium/node-chrome:latest
@@ -16,8 +18,6 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    ports:
-      - ${CHROME_VNC_PORT}:7900 
 
   firefox:
     image: selenium/node-firefox:latest
@@ -29,8 +29,6 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    ports:
-      - ${FIREFOX_VNC_PORT}:7900  
 
   runner:
     build:
