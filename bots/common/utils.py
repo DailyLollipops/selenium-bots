@@ -4,12 +4,12 @@ class dictutils:
     """
 
     @staticmethod
-    def get(dictionary: dict, *keys: str, default=None,):
+    def get(dictionary: dict, *keys: str, default=None):
         """
         Traverse a dictionary in a tree-like structure
 
         :param *keys: Keys to search
-        :param default: Value to return if key not found else raise KeyError
+        :param default: Value to return if key not found
         :return: Value
         """
         current_value = dictionary
@@ -17,9 +17,7 @@ class dictutils:
             if isinstance(current_value, dict) and key in current_value:
                 current_value = current_value[key]
             else:
-                if default:
-                    return default
-                raise KeyError(f'Key not found: {key}')
+                return default
         return current_value
     
     @staticmethod
