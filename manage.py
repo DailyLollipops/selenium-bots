@@ -77,7 +77,6 @@ def runbot(id, **kwargs):
     except Exception as e:
         print(f'Error: {e}')
         return
-    print(params)
     params = json.loads(params)
     bot = handler(params=params, debug=debug)
     bot.handle()
