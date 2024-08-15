@@ -11,8 +11,8 @@ from bots.common.utils import dictutils
 from loguru import logger
 from abc import ABC, abstractmethod
 
+import time
 import traceback
-import re
 
 
 class BaseHandler(ABC):
@@ -90,6 +90,8 @@ class BaseHandler(ABC):
             'message': '',
             'data': {}
         }
+        start_time = time.time()
+
         try:
             self.preprocess_data()
             result = self.run() or {}
@@ -105,6 +107,9 @@ class BaseHandler(ABC):
             data['success'] = False
             data['message'] = str(e)
         finally:
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            self.logger.info(f'Elapsed time: {elapsed_time}')
             self.logger.info(f'Result: {data}')
             if self.proxy_server:
                 self.logger.info('Stopping proxy server')
