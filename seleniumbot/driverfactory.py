@@ -2,8 +2,9 @@ from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.firefox.options import Options as FireFoxOptions
 from selenium.webdriver.chrome.options import Options as ChromeOptions
-from loguru import logger
+from logging import Logger
 
+from .dummylogger import DummyLogger
 from .enums import Driver
 from .utils import stringutil
 
@@ -12,8 +13,9 @@ class DriverFactory:
     HUB_URL = ''
 
 
-    def __init__(self, hub_url: str = 'http://selenium-hub:4444/wd/hub') -> None:
+    def __init__(self, hub_url: str = 'http://selenium-hub:4444/wd/hub', logger: Logger = None) -> None:
         self.HUB_URL = hub_url
+        self.logger = logger or DummyLogger()
 
 
 
@@ -28,7 +30,9 @@ class DriverFactory:
 
 
     def get_driver(self, driver: Driver, proxy: str = None) -> webdriver.Remote:
-        logger.info(f'Connecting to {self.HUB_URL}')
+        self.logger.info(f'Connecting to {self.HUB_URL}')
+        if proxy:
+            self.logger.info(f'Using proxy: {proxy}')
         if driver == Driver.CHROME:
             return self.__initialize_chrome(proxy=proxy)
         elif driver == Driver.FIREFOX:
@@ -55,7 +59,6 @@ class DriverFactory:
         options.set_preference('browser.helperApps.neverAsk.saveToDisk', 'application/x-gzip')
 
         if proxy:
-            logger.info(f'Using proxy: {proxy}')
             proxy_info = stringutil.decompose_proxy_url(proxy)
             options.set_preference('network.proxy.type', 1)
             options.set_preference('network.proxy.http', proxy_info['host'])

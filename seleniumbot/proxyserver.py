@@ -1,7 +1,8 @@
+from .dummylogger import DummyLogger
 from .proxyfactory import ProxyFactory
 from .utils import stringutil
 
-from loguru import logger
+from logging import Logger
 
 import http.server
 import socketserver
@@ -19,12 +20,13 @@ class ProxyServerException(Exception):
 
 
 class Proxy(http.server.SimpleHTTPRequestHandler):
-    def __init__(self, *args, host=None, port=None, username=None, password=None, debug: bool = False, **kwargs):
-        self.debug = debug
+    def __init__(self, *args, host=None, port=None, username=None, password=None, logger: Logger = None,  debug: bool = False, **kwargs):
         self.host = host
         self.port = port
         self.username = username
         self.password = password
+        self.logger = logger or DummyLogger()
+        self.debug = debug
 
         if self.username and self.password:
             self.credentials = base64.b64encode(f'{self.username}:{self.password}'.encode('utf-8')).decode('utf-8')
@@ -37,7 +39,7 @@ class Proxy(http.server.SimpleHTTPRequestHandler):
 
     def log_message(self, format, *args):
         if self.debug:
-            logger.debug(format % args)
+            self.logger.debug(format % args)
 
 
 
@@ -94,7 +96,7 @@ class Proxy(http.server.SimpleHTTPRequestHandler):
                 patch_data = self.rfile.read(length)
                 response = requests.patch(target_url, headers=headers, data=patch_data, proxies=proxies)
             else:
-                logger.warning(f'Received unallowed method: {self.command}')
+                self.logger.warning(f'Received unallowed method: {self.command}')
                 self.send_response(405, 'Method Not Allowed')
                 self.end_headers()
                 return
@@ -105,7 +107,7 @@ class Proxy(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(response.content)
         except requests.exceptions.RequestException as e:
-            logger.warning(f'Error during proxy request: {e}')
+            self.logger.warning(f'Error during proxy request: {e}')
             self.send_response(500, 'Internal Server Error')
             self.end_headers()
 
@@ -133,7 +135,7 @@ class Proxy(http.server.SimpleHTTPRequestHandler):
                     self.send_response(502, 'Bad Gateway')
                     self.end_headers()
                     if self.debug:
-                        logger.debug(f'CONNECT response from proxy: {response}')
+                        self.logger.debug(f'CONNECT response from proxy: {response}')
                     return
 
                 self.send_response(200, 'Connection Established')
@@ -144,7 +146,7 @@ class Proxy(http.server.SimpleHTTPRequestHandler):
         except ProxyServerException as e:
             self.send_response(500, 'Internal Server Error')
             self.end_headers()
-            logger.warning(f'Error in CONNECT method: {e}')
+            self.logger.warning(f'Error in CONNECT method: {e}')
 
 
 
@@ -164,9 +166,9 @@ class Proxy(http.server.SimpleHTTPRequestHandler):
                     client_socket.sendall(data)
         except socket.error as e:
             if e.errno == 104:
-                logger.warning(f'Socket error during data relay: [Errno 104] Connection reset by peer')
+                self.logger.warning(f'Socket error during data relay: [Errno 104] Connection reset by peer')
             else:
-                logger.warning(f'Socket error during data relay: {e}')
+                self.logger.warning(f'Socket error during data relay: {e}')
         finally:
             client_socket.close()
             proxy_socket.close()
@@ -177,7 +179,7 @@ class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 
 
 class ProxyServer:
-    def __init__(self, url: str, debug: bool = False) -> None:
+    def __init__(self, url: str, logger: Logger = None, debug: bool = False) -> None:
         """
         Initialize a proxy server to given proxy url.  \n
         Proxy url can be authenticated.
@@ -189,8 +191,6 @@ class ProxyServer:
 
         :param url: proxy url
         """
-        if not debug:
-            logger.disable('http.server')
         proxy_info = stringutil.decompose_proxy_url(url)
         self.debug = debug
         logger.info(proxy_info)
@@ -201,6 +201,7 @@ class ProxyServer:
         self.server_url = ''
         self.httpd: ThreadedHTTPServer = None
         self.server_thread: threading.Thread = None
+        self.logger = logger or DummyLogger()
 
         signal.signal(signal.SIGINT, self.shutdown)
         signal.signal(signal.SIGTERM, self.shutdown)
@@ -232,7 +233,7 @@ class ProxyServer:
         self.server_thread.start()
         
         assigned_port = self.httpd.server_address[1]
-        logger.info(f'Proxy server started on port {assigned_port}')
+        self.logger.info(f'Proxy server started on port {assigned_port}')
         return assigned_port
 
 
@@ -246,11 +247,11 @@ class ProxyServer:
         
         self.httpd.shutdown()
         self.httpd.server_close()
-        logger.info('Proxy server stopped')
+        self.logger.info('Proxy server stopped')
         self.httpd = None
         self.server_thread.join()
 
 
     def shutdown(self, signum, frame):
-        logger.info('Shutting down proxy server...')
+        self.logger.info('Shutting down proxy server...')
         self.stop()

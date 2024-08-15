@@ -10,11 +10,11 @@ from selenium.common.exceptions import NoAlertPresentException
 from selenium.webdriver.remote.webelement import WebElement
 
 from .driverfactory import DriverFactory
-from .proxyfactory import ProxyFactory
-from .proxyserver import ProxyServer
-from .enums import Driver, BotProxy
+from .dummylogger import DummyLogger
+from .enums import Driver
 
 from datetime import datetime
+from logging import Logger
 
 import time
 import random
@@ -26,10 +26,11 @@ class SeleniumBot:
                  driver: Driver, 
                  timeout: int = 30,
                  proxy: str = None,
-                 debug: bool = False,
+                 logger: Logger = None,
                  **kwargs
                 ) -> None:
-        driver_factory = DriverFactory()
+        self.logger = logger or DummyLogger()
+        driver_factory = DriverFactory(logger=self.logger)
         driver_factory.set_hub_url(hub_url)
         self.driver = driver_factory.get_driver(driver, proxy=proxy)
         self.driver_wait = WebDriverWait(self.driver, timeout)

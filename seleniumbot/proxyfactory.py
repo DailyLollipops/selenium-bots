@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
-from loguru import logger
+from logging import Logger
 
+from .dummylogger import DummyLogger
 from .enums import BotProxy
 
 import requests
@@ -11,8 +12,8 @@ class ProxyFactory:
     PROXYMESH_PASSWORD = ''
 
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, logger: Logger = None) -> None:
+        self.logger = logger or  DummyLogger()
 
 
 
@@ -85,7 +86,7 @@ class ProxyFactory:
                 continue
             if only_https and https_value.lower() == 'no':
                 continue
-            logger.info(f'Got proxy: {ip_address}:{port}')
+            self.logger.info(f'Got proxy: {ip_address}:{port}')
             return f'{ip_address}:{port}'
         raise Exception('Got no proxy')
     
@@ -123,5 +124,5 @@ class ProxyFactory:
         if not proxymesh_proxy:
             raise Exception(f'{bot_proxy} is not a valid proxymesh proxy')
         proxy = f'http://{self.PROXYMESH_USERNAME}:{self.PROXYMESH_PASSWORD}@{proxymesh_proxy}'
-        logger.info(f'Got proxy: http://****:****@{proxymesh_proxy}')
+        self.logger.info(f'Got proxy: http://****:****@{proxymesh_proxy}')
         return proxy

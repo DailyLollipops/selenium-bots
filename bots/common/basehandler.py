@@ -11,6 +11,8 @@ from bots.common.utils import dictutils
 from loguru import logger
 from abc import ABC, abstractmethod
 
+import uuid
+import sys
 import time
 import traceback
 
@@ -25,9 +27,24 @@ class BaseHandler(ABC):
                 ) -> None:
         self.parameters = params or {}
         self.config = config
-        self.logger = logger
         self.proxy_server = None
-        self.logger.add(f'{settings.LOG_DIR}/{config.get("id")}.log', level="INFO")
+
+        trace_id = str(uuid.uuid4())
+        self.logger = logger
+        self.logger = self.logger.bind(trace_id=trace_id)
+        self.logger.remove()
+        log_format = '<green>{time}</green> | <level>{level}</level> | <blue>{extra[trace_id]}</blue> | <level>{message}</level>'
+        self.logger.add(
+            f'{settings.LOG_DIR}/{config.get("id")}.log', 
+            level="INFO", 
+            format=log_format
+        )
+        logger.add(
+            sys.stdout, 
+            format=log_format,
+            colorize=True
+        )
+
         self.logger.info(f'Starting bot params={params}')
         proxy_server_url = ''
         if proxy:
@@ -45,6 +62,7 @@ class BaseHandler(ABC):
             timeout=config.get('timeout', 30),
             proxymesh_username=settings.PROXYMESH_USERNAME,
             proxymesh_password=settings.PROXYMESH_PASSWORD,
+            logger=self.logger,
             debug=debug
         )
         self.logger.info(f"{driver} driver initialized")
