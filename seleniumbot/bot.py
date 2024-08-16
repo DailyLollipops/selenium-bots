@@ -24,11 +24,13 @@ class SeleniumBot:
     def __init__(self, 
                  hub_url: str, 
                  driver: Driver, 
+                 download_path = 'temp/downloads',
                  timeout: int = 30,
                  proxy: str = None,
                  logger: Logger = None,
                  **kwargs
                 ) -> None:
+        self.download_path = download_path
         self.logger = logger or DummyLogger()
         driver_factory = DriverFactory(logger=self.logger)
         driver_factory.set_hub_url(hub_url)
@@ -833,11 +835,22 @@ class SeleniumBot:
         """
         return self.driver.get_downloadable_files()
     
-    def download_remote_file(self, remote_file: str, directory: str):
+    def download_remote_file(self, remote_file: str, directory: str = None):
         """
         Download a file from remote webdriver
 
         :param remote_file: Remote file name
-        :param directory: Target directory
+        :param directory: Target directory, default to driver download location
         """
+        if not directory:
+            directory = self.download_path
         return self.driver.download_file(remote_file, directory)
+    
+    def wait_file_to_be_downloadad(self, file_name: str, timeout: int = 30):
+        """
+        Wait to for file to be downloaded
+
+        :param file_name: File name
+        :param timeout: Download timeout
+        """
+        WebDriverWait(self.driver, timeout).until(lambda d: file_name in d.get_downloadable_files())

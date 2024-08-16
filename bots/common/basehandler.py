@@ -58,6 +58,7 @@ class BaseHandler(ABC):
         self.scraper = SeleniumBot(
             hub_url=settings.HUB_URL,
             driver=driver,
+            download_path=settings.DOWNLOAD_DIR,
             proxy=proxy_server_url,
             timeout=config.get('timeout', 30),
             proxymesh_username=settings.PROXYMESH_USERNAME,
