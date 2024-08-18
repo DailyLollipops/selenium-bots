@@ -176,6 +176,7 @@ class Proxy(http.server.SimpleHTTPRequestHandler):
         try:
             while True:
                 if self.shutdown_flag.is_set():
+                    self.logger.warning('Shutdown flag is already set')
                     break
                 
                 readable, _, _ = select.select([client_socket, proxy_socket], [], [])
@@ -244,6 +245,7 @@ class ProxyServer:
         if isinstance(self.httpd, ThreadedHTTPServer):
             return
         
+        Proxy.shutdown_flag.clear()
         handler = lambda *args, **kwargs: Proxy(*args, 
                                                 host=self.proxy_host, 
                                                 port=self.proxy_port, 
