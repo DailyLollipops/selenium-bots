@@ -13,12 +13,13 @@ config = {
 
     # See bots.common.parameters.py for available rules
     "parameters": {
-        "age": {
-            "param_type": int,
-            "required": True,
-            "min": 18,
-            "max": 99,
-        }
+        # "age": {
+        #     "description": "User age",
+        #     "param_type": int,
+        #     "required": True,
+        #     "min": 18,
+        #     "max": 99,
+        # }
     }
 
     # Other configs (e.g. selectors, xpaths)
