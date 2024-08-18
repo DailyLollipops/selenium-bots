@@ -5,14 +5,17 @@ class DummyLogger:
     def __init__(self) -> None:
         pass
 
-    def debug(self):
+    def debug(self, msg):
         pass
 
-    def info(self):
+    def info(self, msg):
         pass
 
-    def warn(self):
+    def warn(self, msg):
         pass
 
-    def error(self):
+    def warning(self, msg):
+        pass
+
+    def error(self, msg):
         pass

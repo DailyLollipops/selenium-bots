@@ -38,11 +38,11 @@ class SeleniumBot:
         self.logger = logger or DummyLogger()
         self.proxy_server = None
         if not disable_proxy_server and proxy:
-            proxy_factory = ProxyFactory()
+            proxy_factory = ProxyFactory(logger=self.logger)
             proxy_factory.set_proxymesh_username(kwargs.get('proxymesh_username'))
             proxy_factory.set_proxymesh_password(kwargs.get('proxymesh_password'))
             bot_proxy = proxy_factory.get_proxy(proxy)
-            self.proxy_server = ProxyServer(bot_proxy, debug=debug)
+            self.proxy_server = ProxyServer(bot_proxy, logger=self.logger, debug=debug)
             proxy_server_port = self.proxy_server.start()
             proxy = f'http://runner:{proxy_server_port}'
         driver_factory = DriverFactory(logger=self.logger)

@@ -28,12 +28,14 @@ class BaseHandler(ABC):
         self.parameters = params or {}
         self.config = config
         self.proxy_server = None
+        self.debug = debug
+        self.driver = driver
 
         trace_id = str(uuid.uuid4())
         self.logger = logger
         self.logger = self.logger.bind(trace_id=trace_id)
         self.logger.remove()
-        log_format = '<green>{time}</green> | <level>{level}</level> | <blue>{extra[trace_id]}</blue> | <level>{message}</level>'
+        log_format = '<green>{time}</green> | <level>{level}</level> | <blue>{extra[trace_id]}</blue> | <cyan>{name}</cyan>:<cyan>{line}</cyan> | <level>{message}</level>'
         self.logger.add(
             f'{settings.LOG_DIR}/{config.get("id")}.log', 
             level="INFO", 
@@ -47,12 +49,13 @@ class BaseHandler(ABC):
 
         self.logger.info(f'Starting bot params={params}')
         proxy_server_url = ''
+        self.proxy = proxy
         if proxy:
-            proxy_factory = ProxyFactory()
-            proxy_factory.set_proxymesh_username(settings.PROXYMESH_USERNAME)
-            proxy_factory.set_proxymesh_password(settings.PROXYMESH_PASSWORD)
-            bot_proxy = proxy_factory.get_proxy(proxy)
-            self.proxy_server = ProxyServer(bot_proxy, debug=debug)
+            self.proxy_factory = ProxyFactory(logger=self.logger)
+            self.proxy_factory.set_proxymesh_username(settings.PROXYMESH_USERNAME)
+            self.proxy_factory.set_proxymesh_password(settings.PROXYMESH_PASSWORD)
+            bot_proxy = self.proxy_factory.get_proxy(proxy)
+            self.proxy_server = ProxyServer(bot_proxy, logger=self.logger, debug=debug)
             proxy_server_port = self.proxy_server.start()
             proxy_server_url = f'http://runner:{proxy_server_port}'
         self.scraper = SeleniumBot(

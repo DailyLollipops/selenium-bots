@@ -193,7 +193,6 @@ class ProxyServer:
         """
         proxy_info = stringutil.decompose_proxy_url(url)
         self.debug = debug
-        logger.info(proxy_info)
         self.proxy_host = proxy_info['host']
         self.proxy_port = proxy_info['port']
         self.proxy_username = proxy_info['username']
@@ -202,6 +201,8 @@ class ProxyServer:
         self.httpd: ThreadedHTTPServer = None
         self.server_thread: threading.Thread = None
         self.logger = logger or DummyLogger()
+        self.logger.info(proxy_info)
+        self.logger.info(f'Debug: {debug}')
 
         signal.signal(signal.SIGINT, self.shutdown)
         signal.signal(signal.SIGTERM, self.shutdown)
@@ -222,6 +223,7 @@ class ProxyServer:
                                                 port=self.proxy_port, 
                                                 username=self.proxy_username,
                                                 password=self.proxy_password,
+                                                logger=self.logger,
                                                 debug=self.debug,
                                                 **kwargs
                                                )

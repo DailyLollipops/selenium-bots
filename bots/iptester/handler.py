@@ -7,7 +7,7 @@ import click
 
 class BotHandler(BaseHandler):
     def __init__(self, params: dict = {}, debug: bool = False) -> None:
-        super().__init__(Driver.CHROME, proxy=None, config=config, params=params, debug=debug)
+        super().__init__(Driver.CHROME, proxy=BotProxy.FREE_HTTPS, config=config, params=params, debug=debug)
         
     def run(self):
         """
