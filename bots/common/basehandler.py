@@ -12,6 +12,7 @@ from loguru import logger
 from abc import ABC, abstractmethod
 
 import uuid
+import signal
 import sys
 import time
 import traceback
@@ -69,6 +70,8 @@ class BaseHandler(ABC):
             debug=debug
         )
         self.logger.info(f"{driver} driver initialized")
+        signal.signal(signal.SIGINT, self.cleanup)
+        signal.signal(signal.SIGTERM, self.cleanup)
 
 
 
@@ -119,10 +122,6 @@ class BaseHandler(ABC):
             data['success'] = True
             data['message'] = 'Bot ran successfully'
             data['data'] = result
-        except KeyboardInterrupt:
-            self.logger.info('CTRL+C detected')
-            data['success'] = False
-            data['message'] = 'Bot run interrupted'
         except Exception as e:
             self.logger.error(traceback.format_exc())
             data['success'] = False
@@ -132,8 +131,12 @@ class BaseHandler(ABC):
             elapsed_time = end_time - start_time
             self.logger.info(f'Elapsed time: {elapsed_time}')
             self.logger.info(f'Result: {data}')
-            if self.proxy_server:
-                self.logger.info('Stopping proxy server')
-                self.proxy_server.stop()
-            self.logger.info('Closing driver')
-            self.scraper.close()
+            self.cleanup()
+
+
+
+    def cleanup(self, signum=None, frame=None):
+        if self.proxy_server:
+            self.proxy_server.stop()
+        self.logger.info('Closing driver')
+        self.scraper.close()

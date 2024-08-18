@@ -11,8 +11,6 @@ import threading
 import requests
 import socket
 import select
-import sys
-import signal
 
 
 class ProxyServerException(Exception):
@@ -147,6 +145,8 @@ class Proxy(http.server.SimpleHTTPRequestHandler):
             self.send_response(500, 'Internal Server Error')
             self.end_headers()
             self.logger.warning(f'Error in CONNECT method: {e}')
+        except ConnectionRefusedError as e:
+            self.logger.warning('Error in CONNECT method: Connection refused')
 
 
 
@@ -166,7 +166,7 @@ class Proxy(http.server.SimpleHTTPRequestHandler):
                     client_socket.sendall(data)
         except socket.error as e:
             if e.errno == 104:
-                self.logger.warning(f'Socket error during data relay: [Errno 104] Connection reset by peer')
+                self.logger.warning('Socket error during data relay: [Errno 104] Connection reset by peer')
             else:
                 self.logger.warning(f'Socket error during data relay: {e}')
         finally:
@@ -203,9 +203,6 @@ class ProxyServer:
         self.logger = logger or DummyLogger()
         self.logger.info(proxy_info)
         self.logger.info(f'Debug: {debug}')
-
-        signal.signal(signal.SIGINT, self.shutdown)
-        signal.signal(signal.SIGTERM, self.shutdown)
 
 
 
@@ -247,13 +244,9 @@ class ProxyServer:
         if not self.httpd:
             return
         
+        self.logger.info('Stopping proxy server')
         self.httpd.shutdown()
         self.httpd.server_close()
         self.logger.info('Proxy server stopped')
         self.httpd = None
         self.server_thread.join()
-
-
-    def shutdown(self, signum, frame):
-        self.logger.info('Shutting down proxy server...')
-        self.stop()
