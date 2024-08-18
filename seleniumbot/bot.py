@@ -12,6 +12,8 @@ from selenium.webdriver.remote.webelement import WebElement
 from .driverfactory import DriverFactory
 from .dummylogger import DummyLogger
 from .enums import Driver
+from .proxyfactory import ProxyFactory
+from .proxyserver import ProxyServer
 
 from datetime import datetime
 from logging import Logger
@@ -27,11 +29,22 @@ class SeleniumBot:
                  download_path = 'temp/downloads',
                  timeout: int = 30,
                  proxy: str = None,
+                 disable_proxy_server: bool = False,
                  logger: Logger = None,
+                 debug: bool = False,
                  **kwargs
                 ) -> None:
         self.download_path = download_path
         self.logger = logger or DummyLogger()
+        self.proxy_server = None
+        if not disable_proxy_server and proxy:
+            proxy_factory = ProxyFactory()
+            proxy_factory.set_proxymesh_username(kwargs.get('proxymesh_username'))
+            proxy_factory.set_proxymesh_password(kwargs.get('proxymesh_password'))
+            bot_proxy = proxy_factory.get_proxy(proxy)
+            self.proxy_server = ProxyServer(bot_proxy, debug=debug)
+            proxy_server_port = self.proxy_server.start()
+            proxy = f'http://runner:{proxy_server_port}'
         driver_factory = DriverFactory(logger=self.logger)
         driver_factory.set_hub_url(hub_url)
         self.driver = driver_factory.get_driver(driver, proxy=proxy)
@@ -43,6 +56,8 @@ class SeleniumBot:
         Close necessary display and applications
 
         """
+        if self.proxy_server:
+            self.proxy_server.stop()
         if hasattr(self, 'driver'):
             self.driver.quit()
 
