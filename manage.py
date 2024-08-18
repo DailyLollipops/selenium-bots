@@ -1,4 +1,5 @@
 import botutilities
+import gridutilities
 import click
 
 
@@ -26,14 +27,36 @@ def runbot(id, **kwargs):
     debug = kwargs.pop('debug')
     botutilities.runbot(id, params, debug)
 
+
 @click.command()
 @click.argument('id')
 def botinfo(id):
     botutilities.botinfo(id)
 
+
+@click.command()
+def getactivesessions():
+    sessions = gridutilities.get_all_sessions()
+    print(sessions)
+
+
+@click.command()
+@click.argument('session')
+def deletesession(session):
+    gridutilities.delete_session(session)
+
+
+@click.command()
+def deleteallsessions():
+    gridutilities.delete_all_sessions()
+
+
 cli.add_command(createbot)
 cli.add_command(runbot)
 cli.add_command(botinfo)
+cli.add_command(getactivesessions)
+cli.add_command(deletesession)
+cli.add_command(deleteallsessions)
 
 if __name__ == '__main__':
     cli()
