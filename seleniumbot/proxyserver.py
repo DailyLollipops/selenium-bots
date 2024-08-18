@@ -18,6 +18,8 @@ class ProxyServerException(Exception):
 
 
 class Proxy(http.server.SimpleHTTPRequestHandler):
+    shutdown_flag = threading.Event()
+
     def __init__(self, *args, host=None, port=None, username=None, password=None, logger: Logger = None,  debug: bool = False, **kwargs):
         self.host = host
         self.port = port
@@ -42,26 +44,46 @@ class Proxy(http.server.SimpleHTTPRequestHandler):
 
 
     def do_GET(self):
+        if self.shutdown_flag.is_set():
+            self.send_response(503, 'Service Unavailable')
+            self.end_headers()
+            return
         self.send_proxy_request()
 
 
 
     def do_POST(self):
+        if self.shutdown_flag.is_set():
+            self.send_response(503, 'Service Unavailable')
+            self.end_headers()
+            return
         self.send_proxy_request()
 
 
 
     def do_DELETE(self):
+        if self.shutdown_flag.is_set():
+            self.send_response(503, 'Service Unavailable')
+            self.end_headers()
+            return
         self.send_proxy_request()
 
 
 
     def do_PATCH(self):
+        if self.shutdown_flag.is_set():
+            self.send_response(503, 'Service Unavailable')
+            self.end_headers()
+            return
         self.send_proxy_request()
 
 
     
     def do_CONNECT(self):
+        if self.shutdown_flag.is_set():
+            self.send_response(503, 'Service Unavailable')
+            self.end_headers()
+            return
         self.handle_connect()
 
 
@@ -153,6 +175,9 @@ class Proxy(http.server.SimpleHTTPRequestHandler):
     def relay_data(self, client_socket, proxy_socket):
         try:
             while True:
+                if self.shutdown_flag.is_set():
+                    break
+                
                 readable, _, _ = select.select([client_socket, proxy_socket], [], [])
                 if client_socket in readable:
                     data = client_socket.recv(4096)
@@ -176,6 +201,10 @@ class Proxy(http.server.SimpleHTTPRequestHandler):
 
 class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
     """Handle requests in a separate thread."""
+
+    def shutdown(self):
+        self.socket.close()
+        super().shutdown()
 
 
 class ProxyServer:
@@ -245,6 +274,7 @@ class ProxyServer:
             return
         
         self.logger.info('Stopping proxy server')
+        Proxy.shutdown_flag.set()
         self.httpd.shutdown()
         self.httpd.server_close()
         self.logger.info('Proxy server stopped')

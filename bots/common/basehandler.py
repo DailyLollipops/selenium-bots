@@ -31,6 +31,7 @@ class BaseHandler(ABC):
         self.proxy_server = None
         self.debug = debug
         self.driver = driver
+        self.proxy = proxy
 
         trace_id = str(uuid.uuid4())
         self.logger = logger
@@ -50,7 +51,6 @@ class BaseHandler(ABC):
 
         self.logger.info(f'Starting bot params={params}')
         proxy_server_url = ''
-        self.proxy = proxy
         if proxy:
             self.proxy_factory = ProxyFactory(logger=self.logger)
             self.proxy_factory.set_proxymesh_username(settings.PROXYMESH_USERNAME)
