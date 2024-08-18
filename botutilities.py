@@ -2,6 +2,7 @@ import importlib
 import json
 import re
 import shutil
+from typing import Union
 
 def createbot(id: str, name: str = '', description: str = ''):
     """
@@ -31,7 +32,7 @@ def createbot(id: str, name: str = '', description: str = ''):
         file.truncate()
         file.write(contents)
 
-def runbot(id, params: dict|str = {}, debug: bool = False):
+def runbot(id, params: Union[dict, str] = {}, debug: bool = False):
     if isinstance(params, str):
         params = json.loads(params)
     try:
@@ -61,15 +62,13 @@ def botinfo(id):
     parameters = config.get('parameters', {})
     parameter_help_messages = []
     for key, value in parameters.items():
-        parameter_help_format = f'{key}: {value.get('description', "")}'
+        parameter_help_format = f'{key}: {value.get("description", "")}'
         parameter_help_messages.append(parameter_help_format)
-
-    msg_format = \
-        f'''Bot ID: {id}
+    parameter_msg = "\n".join(parameter_help_messages)
+    msg_format = f'''Bot ID: {id}
 Bot name: {name}
 Bot description: {description}
 --------------------------------------
 Parameters:
-{"\n".join(parameter_help_messages)}
-        '''
+{parameter_msg}'''
     print(msg_format)
