@@ -1,7 +1,6 @@
 from bots.iptester.botconfig import config
 from seleniumbot.enums import Driver, BotProxy
 from bots.common.basehandler import BaseHandler
-from bots.common.mixins import RotatingProxyMixin
 
 import json
 import click
