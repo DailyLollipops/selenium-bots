@@ -65,6 +65,7 @@ class BaseHandler(ABC):
             download_path=settings.DOWNLOAD_DIR,
             proxy=proxy_server_url,
             timeout=config.get('timeout', 30),
+            page_timeout=config.get('pageTimeout', 30),
             disable_proxy_server=True,
             logger=self.logger,
             debug=debug

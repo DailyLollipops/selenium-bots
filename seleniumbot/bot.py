@@ -27,6 +27,7 @@ class SeleniumBot:
                  hub_url: str, 
                  driver: Driver, 
                  download_path = 'temp/downloads',
+                 page_timeout: int = 30,
                  timeout: int = 30,
                  proxy: str = None,
                  disable_proxy_server: bool = False,
@@ -48,6 +49,7 @@ class SeleniumBot:
         driver_factory = DriverFactory(logger=self.logger)
         driver_factory.set_hub_url(hub_url)
         self.driver = driver_factory.get_driver(driver, proxy=proxy)
+        self.driver.set_page_load_timeout(page_timeout)
         self.driver_wait = WebDriverWait(self.driver, timeout)
         signal.signal(signal.SIGINT, lambda signum, frame: self.close())
 
