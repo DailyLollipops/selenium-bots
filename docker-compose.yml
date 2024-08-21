@@ -1,7 +1,7 @@
 name: 'selenium-bots'
 services:
   selenium-hub:
-    image: selenium/hub:latest
+    image: selenium/hub:4.23.1
     container_name: selenium-hub
     ports:
       - ${HUB_PORT}:4444
@@ -9,7 +9,7 @@ services:
       - SE_VNC_PASSWORD=${VNC_PASSWORD}
 
   chrome:
-    image: selenium/node-chrome:latest
+    image: selenium/node-chrome:127.0
     shm_size: '2gb'
     volumes:
       - /dev/shm:/dev/shm
@@ -22,7 +22,7 @@ services:
       - SE_OPTS=--enable-managed-downloads true
 
   firefox:
-    image: selenium/node-firefox:latest
+    image: selenium/node-firefox:129.0
     shm_size: '2gb'
     volumes:
       - /dev/shm:/dev/shm
