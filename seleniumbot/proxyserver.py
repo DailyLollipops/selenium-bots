@@ -231,7 +231,6 @@ class ProxyServer:
         self.httpd: ThreadedHTTPServer = None
         self.server_thread: threading.Thread = None
         self.logger = logger or DummyLogger()
-        self.logger.info(proxy_info)
         self.logger.info(f'Debug: {debug}')
 
 
@@ -268,7 +267,7 @@ class ProxyServer:
 
 
 
-    def stop(self):
+    def stop(self, wait: bool = True):
         """
         Stop proxy server
         """
@@ -279,6 +278,7 @@ class ProxyServer:
         Proxy.shutdown_flag.set()
         self.httpd.shutdown()
         self.httpd.server_close()
-        self.logger.info('Proxy server stopped')
         self.httpd = None
-        self.server_thread.join()
+        if wait:
+            self.server_thread.join()
+        self.logger.info('Proxy server stopped')

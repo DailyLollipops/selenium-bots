@@ -1,3 +1,9 @@
+from contextlib import contextmanager
+
+import threading
+import time
+
+
 class dictutils:
     """
     Dictionary utility helper
@@ -53,3 +59,27 @@ class dictutils:
                 if key in dictionary.keys():
                     return True
             return False
+
+
+class contextutils:
+    """
+    Context utility helpers
+    """
+
+    @staticmethod
+    @contextmanager
+    def timeout_sync(timeout: float):
+        """
+        Context manager for enforcing a timeout on a block of code.
+        """
+        timer = threading.Timer(timeout, lambda: None)  # Create a timer that does nothing
+        timer.start()
+        start_time = time.time()
+        
+        try:
+            yield
+            elapsed_time = time.time() - start_time
+            if elapsed_time >= timeout:
+                raise TimeoutError(f'Operation timed out after {timeout} seconds')
+        finally:
+            timer.cancel()

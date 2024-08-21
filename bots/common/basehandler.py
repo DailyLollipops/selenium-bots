@@ -6,7 +6,7 @@ from seleniumbot.enums import Driver, BotProxy
 from bots.common.exceptions import ValidationError
 from bots.common.parameter import Parameter
 from bots.common.settings import settings
-from bots.common.utils import dictutils
+from bots.common.utils import dictutils, contextutils
 
 from loguru import logger
 from abc import ABC, abstractmethod
@@ -32,6 +32,8 @@ class BaseHandler(ABC):
         self.debug = debug
         self.driver = driver
         self.proxy = proxy
+        self.scraper = None
+        self.interrupted = False
 
         trace_id = str(uuid.uuid4())
         self.logger = logger
@@ -72,7 +74,6 @@ class BaseHandler(ABC):
         )
         self.logger.info(f"{driver} driver initialized")
         signal.signal(signal.SIGINT, self.cleanup)
-        signal.signal(signal.SIGTERM, self.cleanup)
 
 
 
@@ -128,16 +129,30 @@ class BaseHandler(ABC):
             data['success'] = False
             data['message'] = str(e)
         finally:
+            if self.interrupted:
+                data['success'] = False
+                data['message'] = 'Bot run interrupted'
+            if not self.interrupted:
+                self.cleanup()
             end_time = time.time()
             elapsed_time = end_time - start_time
             self.logger.info(f'Elapsed time: {elapsed_time}')
             self.logger.info(f'Result: {data}')
-            self.cleanup()
 
 
 
     def cleanup(self, signum=None, frame=None):
+        if signum == signal.SIGINT:
+            self.logger.info('Interrupted')
+            self.interrupted = True
         if self.proxy_server:
-            self.proxy_server.stop()
-        self.logger.info('Closing driver')
-        self.scraper.close()
+            try:
+                with contextutils.timeout_sync(10):
+                    self.proxy_server.stop(wait=False)
+            except TimeoutError:
+                self.logger.info('Proxy server shutdown timeout')
+        if self.scraper:
+            self.logger.info('Closing driver')
+            self.scraper.close()
+        if self.interrupted:
+            sys.exit(0)
