@@ -35,9 +35,9 @@ class BaseHandler(ABC):
         self.scraper = None
         self.interrupted = False
 
-        trace_id = str(uuid.uuid4())
+        self.trace_id = str(uuid.uuid4())
         self.logger = logger
-        self.logger = self.logger.bind(trace_id=trace_id)
+        self.logger = self.logger.bind(trace_id=self.trace_id)
         self.logger.remove()
         log_format = '<green>{time}</green> | <level>{level}</level> | <blue>{extra[trace_id]}</blue> | <cyan>{name}</cyan>:<cyan>{line}</cyan> | <level>{message}</level>'
         self.logger.add(
@@ -112,6 +112,7 @@ class BaseHandler(ABC):
 
     def handle(self) -> dict:
         data = {
+            'trace_id': self.trace_id,
             'success': False,
             'message': '',
             'data': {}
