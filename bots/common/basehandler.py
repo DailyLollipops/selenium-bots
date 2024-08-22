@@ -66,6 +66,7 @@ class BaseHandler(ABC):
             driver=driver,
             download_path=settings.DOWNLOAD_DIR,
             proxy=proxy_server_url,
+            window_size=(config.get('width', 1280), config.get('height', 720)),
             timeout=config.get('timeout', 30),
             page_timeout=config.get('pageTimeout', 30),
             disable_proxy_server=True,

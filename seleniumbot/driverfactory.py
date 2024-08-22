@@ -13,8 +13,13 @@ class DriverFactory:
     HUB_URL = ''
 
 
-    def __init__(self, hub_url: str = 'http://selenium-hub:4444/wd/hub', logger: Logger = None) -> None:
+    def __init__(self, 
+                 hub_url: str = 'http://selenium-hub:4444/wd/hub', 
+                 window_size: tuple[int] = (1280, 720),
+                 logger: Logger = None,
+                 ) -> None:
         self.HUB_URL = hub_url
+        self.window_size = window_size
         self.logger = logger or DummyLogger()
 
 
@@ -43,6 +48,8 @@ class DriverFactory:
     def __initialize_firefox(self, proxy: str = None) -> webdriver.Remote:
         options = FireFoxOptions()
         options.enable_downloads = True
+        options.add_argument(f'--width={self.window_size[0]}')
+        options.add_argument(f'--height={self.window_size[1]}')
         options.set_preference('network.negotiate-auth.allow-proxies', True)
         options.set_preference('network.captive-portal-service.enabled', False)
         options.set_preference('dom.webdriver.enabled', False)
@@ -75,6 +82,7 @@ class DriverFactory:
     def __initialize_chrome(self, proxy: str = None) -> webdriver.Remote:
         options = ChromeOptions()
         options.enable_downloads = True
+        options.add_argument(f'--window-size={self.window_size[0]},{self.window_size[1]}')
         options.add_argument('--no-sandbox')
         options.add_argument('--enable-javascript')
         options.add_argument('--disable-dev-shm-usage')

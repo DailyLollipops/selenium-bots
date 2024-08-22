@@ -29,12 +29,31 @@ class SeleniumBot:
                  download_path = 'temp/downloads',
                  page_timeout: int = 30,
                  timeout: int = 30,
+                 window_size: tuple[int] = (1280, 720),
                  proxy: str = None,
                  disable_proxy_server: bool = False,
                  logger: Logger = None,
                  debug: bool = False,
                  **kwargs
                 ) -> None:
+        """
+        Initialize a selenium bot instance
+
+        :param hub_url: Selenium Grid hub url
+        :param driver: Driver enum
+        :param download_path: Driver download path
+        :param page_timeout: Page timeout
+        :param timeout: Timeout to wait for elements
+        :param window_size: Initial browser window size
+        :param proxy: Botproxy enum or proxy url
+        :param disable_proxy_server: Disable built-in proxy server
+        :param logger: Logger instance
+        :param debug: Turn on verbose logging 
+
+        :Additional params:
+        :param proxymesh_username: Proxymesh username
+        :param proxymesh_password: Proxymesh password
+        """
         self.download_path = download_path
         self.logger = logger or DummyLogger()
         self.proxy_server = None
@@ -47,7 +66,7 @@ class SeleniumBot:
             self.proxy_server = ProxyServer(bot_proxy, logger=self.logger, debug=debug)
             proxy_server_port = self.proxy_server.start()
             proxy = f'http://runner:{proxy_server_port}'
-        driver_factory = DriverFactory(logger=self.logger)
+        driver_factory = DriverFactory(logger=self.logger, window_size=window_size)
         driver_factory.set_hub_url(hub_url)
         self.driver = driver_factory.get_driver(driver, proxy=proxy)
         self.driver.set_page_load_timeout(page_timeout)

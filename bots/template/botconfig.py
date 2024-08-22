@@ -8,8 +8,13 @@ config = {
     # Bot description
     "description": "",
 
+    # Browser window size
+    "width": 1280,
+    "height": 720,
+
     # Timeout for DriverWait
     "timeout": 30,
+    "pageTimeout": 30,
 
     # See bots.common.parameters.py for available rules
     "parameters": {
@@ -20,7 +25,7 @@ config = {
         #     "min": 18,
         #     "max": 99,
         # }
-    }
+    },
 
     # Other configs (e.g. selectors, xpaths)
 
